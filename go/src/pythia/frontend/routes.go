@@ -16,9 +16,6 @@ type Route struct {
 	HandlerFunc http.HandlerFunc
 }
 
-//Routes is a list of Route
-type Routes []Route
-
 //NewRouter changed mux.Router func to work with the Rout struct
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
@@ -68,7 +65,7 @@ func GetClientIPs(r *http.Request) []string {
 	return IPs
 }
 
-var routes = Routes{
+var routes = []Route{
 	Route{
 		"Echo",
 		"POST",
@@ -78,7 +75,13 @@ var routes = Routes{
 	Route{
 		"Task",
 		"POST",
-		"/execute",
+		"/api/task",
 		Task,
+	},
+	Route{
+		"Execute",
+		"POST",
+		"/api/execute",
+		Execute,
 	},
 }

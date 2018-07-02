@@ -55,6 +55,14 @@ type Server struct {
 	Port int
 }
 
+//Struct used by the /api/execute route
+type taskExecute struct {
+	//the code language in which the code will be executed
+	Language string
+	//the code to be executed
+	Input string
+}
+
 // NewServer returns a new server with default parameters.
 func NewServer() *Server {
 	server := new(Server)
@@ -80,6 +88,10 @@ func (server *Server) Run() {
 		os.Exit(0)
 	}()
 	// Start the web server
+	//allowedHeaders := handlers.AllowedHeaders([]string{"X-Requested-With"})
+	//allowedOrigins := handlers.AllowedOrigins([]string{"*"})
+	//allowedMethods := handlers.AllowedMethods([]string{"*"})
+
 	router := NewRouter()
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(server.Port),

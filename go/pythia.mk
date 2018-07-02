@@ -32,6 +32,7 @@ all: go
 go: go_deps $(GO_TARGETS) $(GO_OUT_BINARIES)
 
 go_deps:
+	go get -u github.com/gorilla/handlers
 	go get -u github.com/gorilla/mux
 
 $(GO_TARGETS): $(GO_SOURCES)

@@ -6,8 +6,29 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+
 	"pythia"
 )
+
+//Execute the
+func Execute(rw http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	fmt.Println("in ex")
+	if err != nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+	}
+
+	var taskEx taskExecute
+	if err := json.Unmarshal([]byte(body), &taskEx); err != nil {
+		Error422(rw, err)
+		return
+	}
+	fmt.Println(taskEx.Language + ", " + taskEx.Input)
+	//To be changed
+
+	json.NewEncoder(rw).Encode("code: " + taskEx.Input + ", lang: " + taskEx.Language)
+	return
+}
 
 //Echo the given message in a JSON Message struct format
 func Echo(rw http.ResponseWriter, r *http.Request) {
@@ -47,6 +68,7 @@ func Task(rw http.ResponseWriter, req *http.Request) {
 	}
 	var taskReq taskRequest
 	if err := json.Unmarshal([]byte(body), &taskReq); err != nil {
+		fmt.Println("could not unmarsh taskReq")
 		rw.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -55,11 +77,15 @@ func Task(rw http.ResponseWriter, req *http.Request) {
 	defer conn.Close()
 	content, err := ioutil.ReadFile("tasks/" + taskReq.Tid + ".task")
 	if err != nil {
+		fmt.Println(err)
+		fmt.Println("could not read file")
 		Error422(rw, err)
 		return
 	}
 	var task pythia.Task
 	if err := json.Unmarshal([]byte(content), &task); err != nil {
+		fmt.Println(err)
+		fmt.Println("could not unmarsh task")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -69,13 +95,18 @@ func Task(rw http.ResponseWriter, req *http.Request) {
 		Task:    &task,
 		Input:   taskReq.Response,
 	})
+	var msg pythia.Message
+
 	if msg, ok := <-conn.Receive(); ok {
 		switch msg.Status {
 		case "success":
+			fmt.Println("success")
 			fmt.Fprintf(rw, msg.Output)
 		}
 		return
 	}
+	fmt.Println("task status is no success")
+	fmt.Println(msg.Status)
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 

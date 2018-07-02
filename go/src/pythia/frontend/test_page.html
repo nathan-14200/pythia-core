@@ -1,0 +1,60 @@
+<htlm>
+    <head>
+        <script
+        src="https://code.jquery.com/jquery-1.12.4.min.js"
+        integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+        crossorigin="anonymous"></script>
+      
+        <script type"text/javascript">
+            
+            function SendReq(){
+            var text = '{"Language":"' + $('#lang').val() + '", "Input":"' + $('#code').val() + '"}';
+            $.ajax({
+                type:"POST",
+                url: "http://localhost:8080/api/execute",
+                data: {Language:$('#lang').val(), Input:$('#code').val()},
+
+            })
+            .done(function(data){
+                window.alert(data);
+            })
+            .fail(function(a, b, c) {
+                console.log(a);
+                console.log(b);
+                console.log(c);
+            });
+            /*
+            $.post("http://localhost:80/api/execute", {Language:$('#lang').val(), Input:$('#code').val()})
+            .done(function(data){
+                window.alert(data);
+            })
+            .fail(function() {
+                window.alert("fail");
+            });
+                var xhttp = new XMLHttpRequest();
+                xhttp.open("POST", "http://localhost:80/api/execute", true);
+                xhttp.setRequestHeader( "Access-Control-Allow-Origin", "*","Content-type", "application/json");
+
+               
+                xhttp.onreadystatechange = function () {
+                    if (xhttp.readyState == 4 && xhttp.status == 200) {
+                        window.alert(xhttp.responseText);
+                        document.getElementById("ans").innerHTML = xhttp.responseText;
+                    }
+                }
+                xhttp.send(text) */
+            }
+            </script>
+    </head>
+    <body>
+        <form id="input-form">
+            Language<input type="text" name="lang" id="lang" value=""/><br/>
+            Code<input type="text" name="code" id="code" value=""/><br/>
+        </form>
+        <form id='output-form'>            
+                <button type="button" onclick="SendReq()">Send</button><br/>
+                Answer: <label name="ans" id="ans"></label><br/>
+        </form>
+    </body>
+
+</html>

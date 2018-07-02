@@ -21,7 +21,6 @@ func GetConf() Conf {
 		fmt.Println("ip = 0")
 		myConf = LoadConf()
 	}
-	fmt.Println("sending conf")
 	return myConf
 }
 
