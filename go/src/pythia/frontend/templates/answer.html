@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+   <body> 
+    <p>
+        {% for key, value in result.items() %}
+            {%if key == "stdout"%}
+                Output</br>
+                <textarea rows="5" cols="50" readonly>
+                {{value}}
+                </textarea></br>                
+            {%endif%}
+            {%if key == "stderr" and value != ""%}
+                Error output</br>
+                <textarea rows="5" cols="50" readonly>
+                {{value}}
+                </textarea></br>
+            {%endif%}
+        {% endfor %}
+    </p>
+    <p>
+    {% for key, value in result.items() %}
+        {% if key == "message" %}
+            Error</br>
+            <textarea tows="5" cols="50" readonly>
+            {{value}}
+            </textarea>            
+        {%endif%}
+    {%endfor%}
+    </p>
+ </body>
+</html>

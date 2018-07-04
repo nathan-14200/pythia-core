@@ -22,7 +22,8 @@ import (
 // Global configuration
 var (
 	// The address on which the queue listens.
-	QueueAddr, _ = ParseAddr("127.0.0.1:9000")
+	//default : 127.0.0.1:9000
+	QueueAddr, _ = ParseAddr("51.38.178.2:9000")
 
 	// The interval at which to send keep-alive messages on idle connections.
 	// This setting shall be set before any Conn has been created, and shall not

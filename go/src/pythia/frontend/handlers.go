@@ -10,23 +10,86 @@ import (
 	"pythia"
 )
 
-//Execute the
+//Execute
 func Execute(rw http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
+
 	fmt.Println("in ex")
+
+	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	var taskEx taskExecute
 	if err := json.Unmarshal([]byte(body), &taskEx); err != nil {
-		Error422(rw, err)
+		fmt.Println(body)
+		fmt.Println(err)
+		Error422(rw)
 		return
 	}
-	fmt.Println(taskEx.Language + ", " + taskEx.Input)
-	//To be changed
 
-	json.NewEncoder(rw).Encode("code: " + taskEx.Input + ", lang: " + taskEx.Language)
+	fmt.Println(taskEx.Language + ", " + taskEx.Input)
+
+	var taskFile string
+	lang := taskEx.Language
+
+	switch lang {
+	case "python":
+		taskFile = "execute-python.sfs"
+	case "java":
+		taskFile = "execute-java.sfs"
+	default:
+		Error(rw, "Wrong language syntax")
+		return
+	}
+
+	// Connection to the pool and execution of the task
+	conn := pythia.DialRetry(pythia.QueueAddr)
+	defer conn.Close()
+
+	fmt.Println("connected")
+
+	task := pythia.Task{
+		Environment: lang,
+		TaskFS:      taskFile,
+		Limits: struct {
+			Time   int `json:"time"`
+			Memory int `json:"memory"`
+			Disk   int `json:"disk"`
+			Output int `json:"output"`
+		}{
+			Time:   60,
+			Memory: 32,
+			Disk:   50,
+			Output: 1024,
+		},
+	}
+
+	code := taskEx.Input
+	print("code: " + code)
+
+	conn.Send(pythia.Message{
+		Message: pythia.LaunchMsg,
+		Id:      "test",
+		Task:    &task,
+		Input:   code,
+	})
+	fmt.Println("sent")
+	//var msg pythia.Message
+
+	if msg, ok := <-conn.Receive(); ok {
+		switch msg.Status {
+		case "success":
+			fmt.Println("success")
+			//Sending back Message struct in string
+			json.NewEncoder(rw).Encode(msg.Output)
+			return
+		}
+
+	}
+	//If not ok
+	//TODO
 	return
 }
 
@@ -38,7 +101,7 @@ func Echo(rw http.ResponseWriter, r *http.Request) {
 		rw.WriteHeader(http.StatusInternalServerError)
 	}
 	if err := json.Unmarshal(body, &message); err != nil {
-		Error422(rw, err)
+		Error422(rw)
 		return
 	}
 	for key := range message {
@@ -49,7 +112,7 @@ func Echo(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	Error422(rw, err)
+	Error422(rw)
 
 }
 
@@ -79,7 +142,7 @@ func Task(rw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("could not read file")
-		Error422(rw, err)
+		Error422(rw)
 		return
 	}
 	var task pythia.Task
@@ -110,13 +173,20 @@ func Task(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
-//Error422 response
-func Error422(w http.ResponseWriter, err error) {
-	//Unprocessable Entity if can't convert to struct
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(422)
-	w.Write([]byte("Error 422: Unprocessable Entity "))
-	if err := json.NewEncoder(w).Encode(err); err != nil {
-		panic(err)
-	}
+//Error422 responseused when the data can't be converted to a struct
+func Error422(rw http.ResponseWriter) {
+	rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	rw.WriteHeader(422)
+	message := make(map[string]string)
+	message["message"] = "Unprocessable Entity"
+	json.NewEncoder(rw).Encode(message)
+}
+
+//Error sends which variable was not congruent
+func Error(rw http.ResponseWriter, msg string) {
+	rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	rw.WriteHeader(400)
+	message := make(map[string]string)
+	message["message"] = msg
+	json.NewEncoder(rw).Encode(message)
 }
