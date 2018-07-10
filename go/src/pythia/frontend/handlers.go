@@ -17,18 +17,19 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
+		fmt.Println("error in unmarshal body")
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	var taskEx taskExecute
+	var taskEx inputEx
 	if err := json.Unmarshal([]byte(body), &taskEx); err != nil {
-		fmt.Println(body)
 		fmt.Println(err)
 		Error422(rw)
 		return
 	}
 
+	fmt.Println(taskEx.Limits)
 	fmt.Println(taskEx.Language + ", " + taskEx.Input)
 
 	var taskFile string
@@ -44,6 +45,41 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Sets the values of the TaskLimits
+	defautlLim := pythia.NewTaskLimits()
+	var taskLim pythia.TaskLimits
+
+	//Checks if the limits parameter was given otherwise, loads default config
+	if taskEx.Limits == "" {
+		fmt.Println("default limit loaded")
+		taskLim = defautlLim
+	} else {
+		if err := json.Unmarshal([]byte(taskEx.Limits), &taskLim); err != nil {
+			Error(rw, "limits parameter given but with wrong syntax")
+			return
+		}
+
+		fmt.Println("limits:")
+		fmt.Println(taskLim)
+
+		//Checks if each parameter of the limits struct was given otherwise, loads its default value
+		if taskLim.Time == 0 {
+			taskLim.Time = defautlLim.Time
+		}
+		if taskLim.Memory == 0 {
+			taskLim.Memory = defautlLim.Memory
+		}
+		if taskLim.Disk == 0 {
+			taskLim.Disk = defautlLim.Disk
+		}
+		if taskLim.Output == 0 {
+			taskLim.Output = defautlLim.Output
+		}
+	}
+
+	fmt.Println("limits:")
+	fmt.Println(taskLim)
+
 	// Connection to the pool and execution of the task
 	conn := pythia.DialRetry(pythia.QueueAddr)
 	defer conn.Close()
@@ -53,17 +89,7 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 	task := pythia.Task{
 		Environment: lang,
 		TaskFS:      taskFile,
-		Limits: struct {
-			Time   int `json:"time"`
-			Memory int `json:"memory"`
-			Disk   int `json:"disk"`
-			Output int `json:"output"`
-		}{
-			Time:   60,
-			Memory: 32,
-			Disk:   50,
-			Output: 1024,
-		},
+		Limits:      taskLim,
 	}
 
 	code := taskEx.Input

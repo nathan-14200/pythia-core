@@ -56,11 +56,13 @@ type Server struct {
 }
 
 //Struct used by the /api/execute route
-type taskExecute struct {
+type inputEx struct {
 	//the code language in which the code will be executed
 	Language string
 	//the code to be executed
 	Input string
+	//Limits given to the tasks
+	Limits string //`json:"limits"`
 }
 
 // NewServer returns a new server with default parameters.

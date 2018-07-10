@@ -32,6 +32,27 @@ const (
 	Fatal    Status = "fatal"    // unrecoverable error (e.g. misformatted task), output = error message
 )
 
+type TaskLimits struct {
+	// Maximum execution time in seconds.
+	Time int `json:"time"`
+
+	// Total amount of main memory (in megabytes) allocated
+	// to the sandbox VM.
+	Memory int `json:"memory"`
+
+	// Fraction (in percents) of main memory that can be used as disk space
+	// in a tmpfs. Note that only used disk space is allocated.
+	Disk int `json:"disk"`
+
+	// Maximum size of the output (in bytes).
+	Output int `json:"output"`
+}
+
+//NewTaskLimits provide a TaskLimits object with default values
+func NewTaskLimits() TaskLimits {
+	return TaskLimits{60, 32, 50, 1024}
+}
+
 // Task is the description of a task to be run in a sandbox.
 type Task struct {
 	// Environment is the name of the root filesystem.
@@ -41,21 +62,7 @@ type Task struct {
 	TaskFS string `json:"taskfs"`
 
 	// Execution limits to be enforced in the sandbox.
-	Limits struct {
-		// Maximum execution time in seconds.
-		Time int `json:"time"`
-
-		// Total amount of main memory (in megabytes) allocated
-		// to the sandbox VM.
-		Memory int `json:"memory"`
-
-		// Fraction (in percents) of main memory that can be used as disk space
-		// in a tmpfs. Note that only used disk space is allocated.
-		Disk int `json:"disk"`
-
-		// Maximum size of the output (in bytes).
-		Output int `json:"output"`
-	} `json:"limits"`
+	Limits TaskLimits
 }
 
 func (task Task) String() string {
