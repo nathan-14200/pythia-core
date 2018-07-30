@@ -62,18 +62,18 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println("limits:")
 		fmt.Println(taskLim)
 
-		//Checks if each parameter of the limits struct was given otherwise, loads its default value
+		//If value is not given or smaller than 0, loads its default value
 		//If not given, unmarshal will give it a default value (0 for int)
-		if taskLim.Time == 0 {
+		if taskLim.Time <= 0 {
 			taskLim.Time = defautlLim.Time
 		}
-		if taskLim.Memory == 0 {
+		if taskLim.Memory <= 0 {
 			taskLim.Memory = defautlLim.Memory
 		}
-		if taskLim.Disk == 0 {
+		if taskLim.Disk <= 0 {
 			taskLim.Disk = defautlLim.Disk
 		}
-		if taskLim.Output == 0 {
+		if taskLim.Output <= 0 {
 			taskLim.Output = defautlLim.Output
 		}
 	}
