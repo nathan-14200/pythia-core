@@ -132,7 +132,7 @@ func Echo(rw http.ResponseWriter, r *http.Request) {
 	}
 	for key := range message {
 		if key == "text" {
-			if err := json.NewEncoder(rw).Encode("Reply: " + message["text"]); err != nil {
+			if err := json.NewEncoder(rw).Encode("{\"Reply\": \"" + message["text"] + "\"}"); err != nil {
 				panic(err)
 			}
 			return
