@@ -41,7 +41,7 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 	case "java":
 		taskFile = "execute-java.sfs"
 	default:
-		Error(rw, "Wrong language syntax")
+		Error(rw, "Language key not given or wrong syntax")
 		return
 	}
 
@@ -49,7 +49,7 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 	defautlLim := pythia.NewTaskLimits()
 	var taskLim pythia.TaskLimits
 
-	//Checks if the limits parameter was given otherwise, loads default config
+	//Checks if the limits parameter was given, otherwise loads default config
 	if taskEx.Limits == "" {
 		fmt.Println("default limit loaded")
 		taskLim = defautlLim
@@ -63,6 +63,7 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(taskLim)
 
 		//Checks if each parameter of the limits struct was given otherwise, loads its default value
+		//If not given, unmarshal will give it a default value (0 for int)
 		if taskLim.Time == 0 {
 			taskLim.Time = defautlLim.Time
 		}
@@ -105,17 +106,26 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 	//var msg pythia.Message
 
 	if msg, ok := <-conn.Receive(); ok {
+		//test
+		fmt.Println(msg.Status)
+		fmt.Println(msg.Id)
+		fmt.Println(msg.Capacity)
+		fmt.Println(msg.Message)
+		//test
+
 		switch msg.Status {
 		case "success":
 			fmt.Println("success")
-			//Sending back Message struct in string
-			json.NewEncoder(rw).Encode(msg.Output)
-			return
-		}
 
+			//Sending back Message struct in string
+			json.NewEncoder(rw).Encode(msg)
+			return
+		//if the status is not success, the output is empty
+		default:
+			fmt.Println("failed")
+			json.NewEncoder(rw).Encode(msg)
+		}
 	}
-	//If not ok
-	//TODO
 	return
 }
 
