@@ -73,6 +73,21 @@ func (task Task) String() string {
 	return string(s)
 }
 
+//OutputEx is the structure of the output that will be send by the api/execute route
+type OutputEx struct {
+	//Status of the execution
+	Status Status `json:"status"`
+
+	//ID of the execution received from the client
+	ID int `json:"id"`
+
+	//Output of the result of the execution (stdout, stderr and returncode)
+	Output string `json:"output"`
+
+	//Error contains the error message if one has occure
+	Error string `json:"error"`
+}
+
 // Message type.
 // Components may have internal message types starting with a hyphen.
 type MsgType string

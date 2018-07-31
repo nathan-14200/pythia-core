@@ -34,26 +34,26 @@ func NewRouter() *mux.Router {
 //MiddleWare check the IP of client with the list of IPs in conf.json
 func MiddleWare(h http.Handler) http.Handler {
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 
 		addr := GetClientIPs(r)
 		IPConf := GetConf().IP
 		KeyConf := GetConf().Key
 
 		if KeyCheck(r, KeyConf) == 1 {
-			http.Error(w, "Unauthorized API key", 401)
+			http.Error(rw, "Unauthorized API key", 401)
 			return
 		}
 
 		for _, ipConf := range IPConf {
 			for _, ipClient := range addr {
 				if ipConf == ipClient {
-					h.ServeHTTP(w, r)
+					h.ServeHTTP(rw, r)
 					return
 				}
 			}
 		}
-		http.Error(w, "Unauthorized IP address", 401)
+		http.Error(rw, "Unauthorized IP address", 401)
 		return
 	})
 }
