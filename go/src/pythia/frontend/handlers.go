@@ -28,9 +28,10 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 		Error422(rw)
 		return
 	}
-
+	//test
 	fmt.Println(taskEx.Limits)
 	fmt.Println(taskEx.Language + ", " + taskEx.Input)
+	//test
 
 	var taskFile string
 	lang := taskEx.Language
@@ -59,8 +60,10 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		//test
 		fmt.Println("limits:")
 		fmt.Println(taskLim)
+		//test
 
 		//If value is not given or smaller than 0, loads its default value
 		//If not given, unmarshal will give it a default value (0 for int)
@@ -77,9 +80,10 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 			taskLim.Output = defautlLim.Output
 		}
 	}
-
+	//test
 	fmt.Println("limits:")
 	fmt.Println(taskLim)
+	//test
 
 	// Connection to the pool and execution of the task
 	conn := pythia.DialRetry(pythia.QueueAddr)
@@ -94,7 +98,6 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	code := taskEx.Input
-	print("code: " + code)
 
 	conn.Send(pythia.Message{
 		Message: pythia.LaunchMsg,
