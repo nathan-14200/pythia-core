@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -30,13 +31,19 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-//MiddleWare check the IP of client with the list of IPs in conf.jdon
+//MiddleWare check the IP of client with the list of IPs in conf.json
 func MiddleWare(h http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		addr := GetClientIPs(r)
 		IPConf := GetConf().IP
+		KeyConf := GetConf().Key
+
+		if KeyCheck(r, KeyConf) == 1 {
+			http.Error(w, "Unauthorized API key", 401)
+			return
+		}
 
 		for _, ipConf := range IPConf {
 			for _, ipClient := range addr {
@@ -63,6 +70,20 @@ func GetClientIPs(r *http.Request) []string {
 	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 	IPs = append(IPs, ip)
 	return IPs
+}
+
+//KeyCheck checkst the API key given by the client in the Authorization header
+func KeyCheck(r *http.Request, key string) int {
+	fmt.Println(key)
+	fmt.Println("Header")
+	for name, values := range r.Header {
+		fmt.Println(name)
+		fmt.Println(values)
+		if name == "Authorization" && values[0] == key {
+			return 0
+		}
+	}
+	return 1
 }
 
 var routes = []Route{

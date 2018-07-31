@@ -9,7 +9,8 @@ import (
 
 //Conf struct for the config.json file
 type Conf struct {
-	IP []string
+	IP  []string
+	Key string
 }
 
 var myConf Conf
@@ -38,11 +39,11 @@ func LoadConf() Conf {
 		log.Println("Could not retreive data from conf file default configuration loaded")
 		return LoadDefaultConf()
 	}
-
+	fmt.Println(conf)
 	return conf
 }
 
 func LoadDefaultConf() Conf {
-	conf := Conf{[]string{"127.0.0.1", "::1"}}
+	conf := Conf{[]string{"127.0.0.1", "::1"}, ""}
 	return conf
 }
