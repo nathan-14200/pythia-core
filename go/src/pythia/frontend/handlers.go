@@ -13,19 +13,22 @@ import (
 //Execute
 func Execute(rw http.ResponseWriter, r *http.Request) {
 
+	//Creating the output message
+	var outputMsg pythia.OutputEx
+
 	fmt.Println("in ex")
 
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("error in unmarshal body")
-		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(err)
+		Error(rw, "Error while reading request's body", 422, outputMsg)
 		return
 	}
 
 	var taskEx inputEx
 	if err := json.Unmarshal([]byte(body), &taskEx); err != nil {
 		fmt.Println(err)
-		Error422(rw)
+		Error(rw, "Could not unmarshal request's body", 422, outputMsg)
 		return
 	}
 	//test
@@ -42,7 +45,7 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 	case "java":
 		taskFile = "execute-java.sfs"
 	default:
-		Error(rw, "Language key not given or wrong syntax")
+		Error(rw, "Language key not given or wrong syntax", 400, outputMsg)
 		return
 	}
 
@@ -56,7 +59,7 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 		taskLim = defautlLim
 	} else {
 		if err := json.Unmarshal([]byte(taskEx.Limits), &taskLim); err != nil {
-			Error(rw, "limits parameter given but with wrong syntax")
+			Error(rw, "Limits parameter given but with wrong syntax", 400, outputMsg)
 			return
 		}
 
@@ -115,6 +118,10 @@ func Execute(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println(msg.Capacity)
 		fmt.Println(msg.Message)
 		//test
+
+		//TODO
+		//Change msg to fit pythia.OutputEx
+		//
 
 		switch msg.Status {
 		case "success":
@@ -212,7 +219,7 @@ func Task(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(http.StatusInternalServerError)
 }
 
-//Error422 responseused when the data can't be converted to a struct
+//Error422 used in the echo and task route
 func Error422(rw http.ResponseWriter) {
 	rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	rw.WriteHeader(422)
@@ -221,11 +228,11 @@ func Error422(rw http.ResponseWriter) {
 	json.NewEncoder(rw).Encode(message)
 }
 
-//Error sends which variable was not congruent
-func Error(rw http.ResponseWriter, msg string) {
+//Error use to set the Error value in the pythia.OutputEx struct
+func Error(rw http.ResponseWriter, msg string, code int, output pythia.OutputEx) {
 	rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	rw.WriteHeader(400)
-	message := make(map[string]string)
-	message["message"] = msg
-	json.NewEncoder(rw).Encode(message)
+	rw.WriteHeader(code)
+	output.Status = pythia.Error
+	output.Error = msg
+	json.NewEncoder(rw).Encode(output)
 }
