@@ -73,19 +73,25 @@ func GetClientIPs(r *http.Request) []string {
 }
 
 //KeyCheck checkst the API key given by the client in the Authorization header
-func KeyCheck(r *http.Request, key string) int {
-	fmt.Println(key)
+func KeyCheck(r *http.Request, keys []string) int {
+	fmt.Println(keys)
 	fmt.Println("Header")
 	for name, values := range r.Header {
 		fmt.Println(name)
 		fmt.Println(values)
-		if name == "Authorization" && values[0] == key {
-			return 0
+		if name == "Authorization" {
+			for _, key := range keys {
+				if values[0] == key {
+					return 0
+				}
+			}
 		}
+		break
 	}
 	return 1
 }
 
+//List of all possible routes
 var routes = []Route{
 	Route{
 		"Echo",

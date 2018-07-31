@@ -10,7 +10,7 @@ import (
 //Conf struct for the config.json file
 type Conf struct {
 	IP  []string
-	Key string
+	Key []string
 }
 
 var myConf Conf
@@ -44,6 +44,6 @@ func LoadConf() Conf {
 }
 
 func LoadDefaultConf() Conf {
-	conf := Conf{[]string{"127.0.0.1", "::1"}, ""}
+	conf := Conf{[]string{"127.0.0.1", "::1"}, []string{""}}
 	return conf
 }
